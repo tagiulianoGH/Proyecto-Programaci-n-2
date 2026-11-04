@@ -1,0 +1,117 @@
+<section class="customers-container">
+  <div class="customers-header">
+    <div>
+      <h2>Listado de Clientes</h2>
+      <p>
+        Base de datos de clientes con su DNI y situación fiscal.
+        <strong>{{ total() }} registros</strong> cargados desde MySQL.
+      </p>
+    </div>
+
+    <button *appPermiso="'datos.gestionar'" type="button" class="entity-btn" (click)="abrirNuevo()">
+      + Nuevo cliente
+    </button>
+  </div>
+
+  @if (error()) {
+    <div class="entity-alert entity-alert-error">{{ error() }}</div>
+  }
+
+  @if (mensaje()) {
+    <div class="entity-alert entity-alert-ok">{{ mensaje() }}</div>
+  }
+
+  @if (total() === 0) {
+    <div class="empty-state">No hay clientes cargados o cargando...</div>
+  } @else {
+    <div class="table-responsive">
+      <table class="customers-table">
+        <thead>
+          <tr>
+            <th>Cliente (Apellido y Nombre)</th>
+            <th>DNI</th>
+            <th class="text-center">Situación Fiscal</th>
+            <th class="text-right" *appPermiso="'datos.gestionar'">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (cl of clients(); track cl.id) {
+            <tr>
+              <td>
+                <div class="customer-info">
+                  <div class="avatar-fallback">
+                    {{ cl.apellido.charAt(0) }}{{ cl.nombre.charAt(0) }}
+                  </div>
+                  <div class="customer-name">
+                    <span class="lastname">{{ cl.apellido }}</span>, {{ cl.nombre }}
+                  </div>
+                </div>
+              </td>
+
+              <td class="dni">{{ cl.dni }}</td>
+
+              <td class="text-center">
+                <span class="status-badge {{ claseSituacion(cl.situacionFiscal) }}">
+                  {{ cl.situacionFiscal }}
+                </span>
+              </td>
+
+              <td class="text-right actions" *appPermiso="'datos.gestionar'">
+                <button type="button" class="row-btn" (click)="abrirEditar(cl)">Editar</button>
+                <button type="button" class="row-btn danger" (click)="eliminar(cl)">Eliminar</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
+
+@if (modalAbierto()) {
+  <div class="entity-modal-backdrop" (click)="cerrarModal()">
+    <div class="entity-modal" (click)="$event.stopPropagation()">
+      <header class="entity-modal-header">
+        <h3>{{ editando() ? 'Editar cliente' : 'Nuevo cliente' }}</h3>
+        <button type="button" class="entity-close" (click)="cerrarModal()">×</button>
+      </header>
+
+      <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+        <div class="entity-grid">
+          <label class="entity-field">
+            <span>Nombre</span>
+            <input type="text" formControlName="nombre" />
+          </label>
+
+          <label class="entity-field">
+            <span>Apellido</span>
+            <input type="text" formControlName="apellido" />
+          </label>
+        </div>
+
+        <div class="entity-grid">
+          <label class="entity-field">
+            <span>DNI</span>
+            <input type="number" formControlName="dni" />
+          </label>
+
+          <label class="entity-field">
+            <span>Situación fiscal</span>
+            <select formControlName="situacionFiscal">
+              @for (situacion of situaciones; track situacion) {
+                <option [value]="situacion">{{ situacion }}</option>
+              }
+            </select>
+          </label>
+        </div>
+
+        <footer class="entity-modal-actions">
+          <button type="button" class="entity-btn secondary" (click)="cerrarModal()">Cancelar</button>
+          <button type="submit" class="entity-btn" [disabled]="guardando()">
+            {{ guardando() ? 'Guardando...' : 'Guardar' }}
+          </button>
+        </footer>
+      </form>
+    </div>
+  </div>
+}

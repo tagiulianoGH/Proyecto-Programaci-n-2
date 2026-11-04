@@ -1,0 +1,66 @@
+<section class="profile-page">
+  <header class="profile-header">
+    <h1>Mi perfil</h1>
+    <p>Datos de tu cuenta y cambio de contraseña.</p>
+  </header>
+
+  <div class="profile-grid">
+    <div class="profile-card">
+      <h2>Datos de la cuenta</h2>
+      <dl class="profile-data">
+        <div>
+          <dt>Nombre</dt>
+          <dd>{{ auth.usuario()?.nombre }} {{ auth.usuario()?.apellido }}</dd>
+        </div>
+        <div>
+          <dt>Email</dt>
+          <dd>{{ auth.usuario()?.email }}</dd>
+        </div>
+        <div>
+          <dt>Rol</dt>
+          <dd><span class="profile-badge">{{ etiquetaRol() }}</span></dd>
+        </div>
+        <div>
+          <dt>Sucursal</dt>
+          <dd>{{ auth.usuario()?.sucursal ?? 'Todas las sucursales' }}</dd>
+        </div>
+      </dl>
+    </div>
+
+    <div class="profile-card">
+      <h2>Cambiar contraseña</h2>
+
+      <form [formGroup]="form" (ngSubmit)="cambiarPassword()" novalidate>
+        <label class="field">
+          <span>Contraseña actual</span>
+          <input type="password" formControlName="actual" autocomplete="current-password" />
+        </label>
+
+        <label class="field">
+          <span>Nueva contraseña</span>
+          <input type="password" formControlName="nueva" autocomplete="new-password" />
+          @if (form.controls.nueva.touched && form.controls.nueva.invalid) {
+            <small class="field-error">Debe tener al menos 8 caracteres.</small>
+          }
+        </label>
+
+        <label class="field">
+          <span>Repetir nueva contraseña</span>
+          <input type="password" formControlName="repetir" autocomplete="new-password" />
+        </label>
+
+        @if (error()) {
+          <div class="alert alert-error">{{ error() }}</div>
+        }
+
+        @if (mensaje()) {
+          <div class="alert alert-ok">{{ mensaje() }}</div>
+        }
+
+        <button type="submit" class="save-btn" [disabled]="cargando()">
+          {{ cargando() ? 'Guardando...' : 'Guardar contraseña' }}
+        </button>
+      </form>
+    </div>
+  </div>
+</section>

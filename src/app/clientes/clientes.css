@@ -1,0 +1,319 @@
+/* Contenedor Principal */
+.customers-container {
+  padding: 2.5rem 1.5rem;
+  font-family: system-ui, -apple-system, sans-serif;
+  color: #1e293b;
+}
+
+/* Encabezado */
+.customers-header {
+  margin-bottom: 2.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.customers-header h2 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.025em;
+}
+
+.customers-header p {
+  color: #64748b;
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* Estado vacío / carga */
+.empty-state {
+  background-color: #ffffff;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  color: #64748b;
+}
+
+/* Contenedor Responsivo para Scroll Horizontal en Móviles */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Estilos de la Tabla */
+.customers-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.customers-table th {
+  background-color: #f8fafc;
+  color: #475569;
+  font-weight: 600;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.customers-table td {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+/* Animación Hover en las Filas */
+.customers-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+/* Alineaciones Utilitarias */
+.text-center {
+  text-align: center !important;
+}
+.text-right {
+  text-align: right !important;
+}
+
+/* Identidad del Cliente (Avatar + Texto) */
+.customer-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.avatar-fallback {
+  width: 40px;
+  height: 40px;
+  background-color: #e2e8f0;
+  color: #475569;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  border: 1px solid #cbd5e1;
+  flex-shrink: 0;
+}
+
+.customer-name {
+  color: #334155;
+}
+
+.customer-name .lastname {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.dni {
+  font-family: monospace;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+/* Badges de Situación Fiscal */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-badge.responsible {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.status-badge.monotributista {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.status-badge.exento {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge.consumidor {
+  background-color: #e0e7ff;
+  color: #3730a3;
+}
+
+.status-badge.no-categorizado {
+  background-color: #f1f5f9;
+  color: #475569;
+}
+
+/* Acciones y formulario (solo admin/dev) */
+.entity-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  background: var(--primary-color);
+  color: #ffffff;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.entity-btn.secondary {
+  background: #f1f5f9;
+  color: var(--text-dark);
+}
+
+.entity-btn:disabled {
+  opacity: 0.65;
+  cursor: progress;
+}
+
+.actions {
+  white-space: nowrap;
+}
+
+.row-btn {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+}
+
+.row-btn.danger {
+  color: #be123c;
+}
+
+.row-btn:hover {
+  text-decoration: underline;
+}
+
+.entity-alert {
+  padding: 0.7rem 0.9rem;
+  border-radius: 9px;
+  font-size: 0.84rem;
+  margin-bottom: 1rem;
+}
+
+.entity-alert-error {
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  color: #be123c;
+}
+
+.entity-alert-ok {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #047857;
+}
+
+.entity-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 10000;
+}
+
+.entity-modal {
+  width: 100%;
+  max-width: 520px;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 1.4rem 1.5rem;
+  box-shadow: 0 40px 80px -30px rgba(15, 23, 42, 0.55);
+}
+
+.entity-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.entity-modal-header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--text-dark);
+}
+
+.entity-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text-light);
+}
+
+.entity-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.9rem;
+}
+
+.entity-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 0.9rem;
+}
+
+.entity-field span {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.entity-field input,
+.entity-field select {
+  padding: 0.6rem 0.7rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  outline: none;
+  background: #ffffff;
+}
+
+.entity-field input:focus,
+.entity-field select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(221, 0, 49, 0.12);
+}
+
+.entity-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  border-top: 1px solid var(--border-color);
+  padding-top: 1rem;
+}
+
+@media (max-width: 640px) {
+  .entity-grid {
+    grid-template-columns: 1fr;
+  }
+}

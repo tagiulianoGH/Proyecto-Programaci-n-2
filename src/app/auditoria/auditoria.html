@@ -1,0 +1,116 @@
+<section class="audit-page">
+  <header class="audit-header">
+    <div>
+      <h1>Auditoría</h1>
+      <p>Registro de accesos y acciones sensibles del sistema.</p>
+    </div>
+    <span class="counter">{{ total() }} evento(s)</span>
+  </header>
+
+  <div class="filters">
+    <label class="filter-field">
+      <span>Acción</span>
+      <input
+        type="text"
+        placeholder="login, usuario, factura..."
+        [value]="accion()"
+        (input)="accion.set($any($event.target).value)"
+        (keyup.enter)="filtrar()"
+      />
+    </label>
+
+    <label class="filter-field">
+      <span>Desde</span>
+      <input
+        type="date"
+        [value]="desde()"
+        (change)="desde.set($any($event.target).value)"
+      />
+    </label>
+
+    <div class="filter-actions">
+      <button type="button" class="primary-btn" (click)="filtrar()">Filtrar</button>
+      <button type="button" class="secondary-btn" (click)="limpiar()">Limpiar</button>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="alert">{{ error() }}</div>
+  }
+
+  @if (cargando()) {
+    <div class="state">Cargando auditoría...</div>
+  } @else if (items().length === 0) {
+    <div class="state">No hay eventos para los filtros seleccionados.</div>
+  } @else {
+    <div class="table-wrapper">
+      <table class="audit-table">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Usuario</th>
+            <th>Rol</th>
+            <th>Acción</th>
+            <th>Entidad</th>
+            <th>Detalle</th>
+            <th>IP</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of items(); track item.id) {
+            <tr>
+              <td class="muted">{{ item.creadoEn | date: 'dd/MM/yyyy HH:mm:ss' }}</td>
+              <td>
+                @if (item.email) {
+                  <div class="user-cell">
+                    <strong>{{ item.nombre }} {{ item.apellido }}</strong>
+                    <span class="muted">{{ item.email }}</span>
+                  </div>
+                } @else {
+                  <span class="muted">Sistema / anónimo</span>
+                }
+              </td>
+              <td>
+                @if (item.rol) {
+                  <span class="role-pill" [class]="'role-pill rol-' + item.rol">{{ item.rol }}</span>
+                } @else {
+                  —
+                }
+              </td>
+              <td>
+                <span class="accion-pill" [class]="'accion-pill ' + claseAccion(item.accion)">
+                  {{ item.accion }}
+                </span>
+              </td>
+              <td class="muted">
+                {{ item.entidad ?? '—' }}
+                @if (item.entidadId !== null) {
+                  #{{ item.entidadId }}
+                }
+              </td>
+              <td class="detail">{{ detalle(item) }}</td>
+              <td class="muted">{{ item.ip ?? '—' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination">
+      <button type="button" class="secondary-btn" [disabled]="offset() === 0" (click)="anterior()">
+        Anterior
+      </button>
+      <span class="muted">
+        Mostrando {{ offset() + 1 }}–{{ offset() + items().length }} de {{ total() }}
+      </span>
+      <button
+        type="button"
+        class="secondary-btn"
+        [disabled]="offset() + limite >= total()"
+        (click)="siguiente()"
+      >
+        Siguiente
+      </button>
+    </div>
+  }
+</section>

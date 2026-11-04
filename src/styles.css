@@ -1,0 +1,18 @@
+/* Estilos globales y variables de tema */
+:root {
+  --primary-color: #dd0031;
+  --text-dark: #0f172a;
+  --text-light: #64748b;
+  --bg-header: #ffffff;
+  --border-color: #f1f5f9;
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  background-color: #f8fafc;
+  font-family: system-ui, -apple-system, sans-serif;
+  color: #1e293b;
+}

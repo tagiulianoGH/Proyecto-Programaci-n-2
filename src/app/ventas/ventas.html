@@ -1,0 +1,198 @@
+<section class="sales-dashboard">
+  <div class="dashboard-container">
+    <header class="dashboard-header">
+      <h1>Ventas Mensuales por Sucursal</h1>
+      <p class="subtitle">
+        Total vendido por mes según las facturas de la base de datos (importe + 21 % de IVA).
+      </p>
+    </header>
+
+    <!-- Controles superiores -->
+    <div class="controls">
+      <label for="tipo-grafico">
+        Gráfico:
+        <select id="tipo-grafico" (change)="cambiarGrafico($event)">
+          <option value="lineas">Líneas</option>
+          <option value="barras">Barras</option>
+          <option value="apiladas">Barras apiladas</option>
+        </select>
+      </label>
+
+      <div class="summary">
+        <span class="summary-chip">{{ resumen().facturas }} facturas</span>
+        <span class="summary-chip summary-total">
+          Total vendido (con IVA):
+          {{ resumen().totalConIva | currency: 'ARS' : 'symbol-narrow' : '1.0-0' }}
+        </span>
+      </div>
+    </div>
+
+    @if (cargando()) {
+      <div class="estado">Cargando datos de ventas...</div>
+    } @else if (ventas().length === 0) {
+      <div class="estado">
+        No se encontraron facturas en la base de datos. Verificá que MySQL esté iniciado y que
+        los endpoints PHP estén disponibles.
+      </div>
+    } @else {
+      <!-- Tabla mensual -->
+      <div class="tabla-wrapper">
+        <table class="ventas-table">
+          <thead>
+            <tr>
+              <th>Mes</th>
+              @for (sucursal of sucursales(); track sucursal.idSucursal) {
+                <th class="suc-header">{{ sucursal.nombre }}</th>
+              }
+              <th class="total-header">Total mes</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (fila of filas(); track fila.mes) {
+              <tr>
+                <td class="mes-cell">{{ fila.nombreMes }}</td>
+                @for (valor of fila.valores; track $index) {
+                  <td>{{ valor.total | currency: 'ARS' : 'symbol-narrow' : '1.0-0' }}</td>
+                }
+                <td class="total-mes-cell">
+                  {{ fila.totalMes | currency: 'ARS' : 'symbol-narrow' : '1.0-0' }}
+                </td>
+              </tr>
+            }
+          </tbody>
+          <tfoot>
+            <tr>
+              <td class="total-label">Total año</td>
+              @for (total of totalesPorSucursal(); track $index) {
+                <td class="total-suc-cell">
+                  {{ total | currency: 'ARS' : 'symbol-narrow' : '1.0-0' }}
+                </td>
+              }
+              <td class="grand-total">
+                {{ granTotal() | currency: 'ARS' : 'symbol-narrow' : '1.0-0' }}
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- Gráfico -->
+      <div class="grafico-wrapper">
+        <h3>{{ tituloGrafico() }}</h3>
+
+        <div class="grafico-container">
+          <svg viewBox="0 0 800 400" preserveAspectRatio="xMidYMid meet" role="img" [attr.aria-label]="tituloGrafico()">
+            <!-- Ejes -->
+            <line x1="55" y1="25" x2="55" y2="360" stroke="#555" stroke-width="1" />
+            <line x1="55" y1="360" x2="770" y2="360" stroke="#555" stroke-width="1" />
+
+            <!-- Líneas de referencia y valores del eje Y -->
+            @for (tick of ticks(); track $index) {
+              <line
+                x1="55"
+                x2="770"
+                [attr.y1]="tick.y"
+                [attr.y2]="tick.y"
+                class="grid-line"
+              />
+              <text
+                x="47"
+                [attr.y]="tick.y + 4"
+                class="axis-label"
+                text-anchor="end"
+              >
+                {{ formatearEje(tick.valor) }}
+              </text>
+            }
+
+            <!-- Etiquetas de los meses -->
+            @for (etiqueta of etiquetasMeses(); track etiqueta.nombre) {
+              <text
+                [attr.x]="etiqueta.x"
+                y="380"
+                class="axis-label"
+                text-anchor="middle"
+              >
+                {{ etiqueta.nombre }}
+              </text>
+            }
+
+            @switch (tipoGrafico()) {
+              @case ('lineas') {
+                @for (serie of seriesLineas(); track serie.idSucursal) {
+                  <polyline
+                    [attr.points]="serie.puntos"
+                    fill="none"
+                    [attr.stroke]="serie.color"
+                    stroke-width="2.5"
+                    stroke-linejoin="round"
+                    stroke-linecap="round"
+                  />
+                  @for (punto of serie.circulos; track $index) {
+                    <circle
+                      [attr.cx]="punto.cx"
+                      [attr.cy]="punto.cy"
+                      r="4"
+                      [attr.fill]="serie.color"
+                    >
+                      <title>
+                        {{ punto.texto }}:
+                        {{ punto.valor | currency: 'ARS' : 'symbol-narrow' : '1.0-0' }}
+                      </title>
+                    </circle>
+                  }
+                }
+              }
+
+              @case ('barras') {
+                @for (barra of barrasAgrupadas(); track $index) {
+                  <rect
+                    [attr.x]="barra.x"
+                    [attr.y]="barra.y"
+                    [attr.width]="barra.width"
+                    [attr.height]="barra.height"
+                    [attr.fill]="barra.color"
+                  >
+                    <title>
+                      {{ barra.texto }}:
+                      {{ barra.valor | currency: 'ARS' : 'symbol-narrow' : '1.0-0' }}
+                    </title>
+                  </rect>
+                }
+              }
+
+              @case ('apiladas') {
+                @for (barra of barrasApiladas(); track $index) {
+                  @for (segmento of barra.segmentos; track $index) {
+                    <rect
+                      [attr.x]="segmento.x"
+                      [attr.y]="segmento.y"
+                      [attr.width]="segmento.width"
+                      [attr.height]="segmento.height"
+                      [attr.fill]="segmento.color"
+                    >
+                      <title>
+                        {{ segmento.texto }}:
+                        {{ segmento.valor | currency: 'ARS' : 'symbol-narrow' : '1.0-0' }}
+                      </title>
+                    </rect>
+                  }
+                }
+              }
+            }
+          </svg>
+        </div>
+
+        <!-- Leyenda -->
+        <div class="legend">
+          @for (sucursal of sucursales(); track sucursal.idSucursal) {
+            <div class="legend-item">
+              <span class="legend-color" [style.background-color]="sucursal.color"></span>
+              <span>{{ sucursal.nombre }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</section>

@@ -1,0 +1,100 @@
+<section class="branches-container">
+  <div class="branches-header">
+    <div>
+      <h2>Nuestras Sucursales</h2>
+      <p>
+        Información de las sedes operativas de la empresa:
+        <strong>{{ total() }} sucursales</strong> y
+        <strong>{{ totalEmpleados() }} empleados</strong> en total.
+      </p>
+    </div>
+
+    <button *appPermiso="'datos.gestionar'" type="button" class="branch-btn" (click)="abrirNuevo()">
+      + Nueva sucursal
+    </button>
+  </div>
+
+  @if (error()) {
+    <div class="branch-alert branch-alert-error">{{ error() }}</div>
+  }
+
+  @if (mensaje()) {
+    <div class="branch-alert branch-alert-ok">{{ mensaje() }}</div>
+  }
+
+  @if (total() === 0) {
+    <div class="empty-state">No hay sucursales cargadas o cargando...</div>
+  } @else {
+    <div class="branches-grid">
+      @for (s of suc(); track s.id) {
+        <div class="branch-card">
+          <span class="branch-id">#{{ s.id }}</span>
+
+          <div class="branch-info">
+            <div class="info-icon">📍</div>
+            <div class="info-text">
+              <h3>{{ s.ciudad }}</h3>
+              <p class="address">{{ s.direccion }}</p>
+              <p class="branch-name">{{ s.nombre }}</p>
+            </div>
+          </div>
+
+          <div class="branch-meta">
+            <div class="meta-item">
+              <span class="meta-icon">👥</span>
+              <span class="meta-label">Personal:</span>
+              <span class="meta-value">{{ s.cantEmpleados }} Empleados</span>
+            </div>
+
+            <div class="branch-actions" *appPermiso="'datos.gestionar'">
+              <button type="button" class="branch-link" (click)="abrirEditar(s)">Editar</button>
+              <button type="button" class="branch-link danger" (click)="eliminar(s)">Eliminar</button>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</section>
+
+@if (modalAbierto()) {
+  <div class="branch-modal-backdrop" (click)="cerrarModal()">
+    <div class="branch-modal" (click)="$event.stopPropagation()">
+      <header class="branch-modal-header">
+        <h3>{{ editando() ? 'Editar sucursal' : 'Nueva sucursal' }}</h3>
+        <button type="button" class="branch-close" (click)="cerrarModal()">×</button>
+      </header>
+
+      <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+        <label class="branch-field">
+          <span>Nombre</span>
+          <input type="text" formControlName="nombre" placeholder="Sucursal Centro" />
+        </label>
+
+        <div class="branch-grid">
+          <label class="branch-field">
+            <span>Ciudad</span>
+            <input type="text" formControlName="ciudad" />
+          </label>
+
+          <label class="branch-field">
+            <span>Cantidad de empleados</span>
+            <input type="number" formControlName="cantEmpleados" />
+          </label>
+        </div>
+
+        <label class="branch-field">
+          <span>Dirección</span>
+          <input type="text" formControlName="direccion" />
+        </label>
+
+        <footer class="branch-modal-actions">
+          <button type="button" class="branch-btn secondary" (click)="cerrarModal()">Cancelar</button>
+          <button type="submit" class="branch-btn" [disabled]="guardando()">
+            {{ guardando() ? 'Guardando...' : 'Guardar' }}
+          </button>
+        </footer>
+      </form>
+    </div>
+  </div>
+}

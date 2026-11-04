@@ -1,0 +1,230 @@
+<section class="facturas-page">
+  <header class="page-header">
+    <div>
+      <h1>Facturas</h1>
+      <p>
+        Listado de facturas emitidas con su cliente, sucursal, importe e IVA.
+        @if (!nuevo()) {
+          Solo se muestran las facturas de tu sucursal.
+        }
+      </p>
+    </div>
+    @if (nuevo()) {
+      <button type="button" class="primary-btn" (click)="abrirNuevo()">+ Nueva factura</button>
+    }
+  </header>
+
+  <form class="filters" [formGroup]="filtrosForm" (ngSubmit)="aplicarFiltros()">
+    <label class="filter-field grow">
+      <span>Buscar</span>
+      <input type="search" formControlName="q" placeholder="Nro, cliente o DNI..." />
+    </label>
+
+    <label class="filter-field">
+      <span>Estado</span>
+      <select formControlName="estado">
+        <option value="">Todos</option>
+        @for (estado of estados; track estado) {
+          <option [value]="estado">{{ estado }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="filter-field" *appPermiso="'datos.gestionar'">
+      <span>Sucursal</span>
+      <select formControlName="idSucursal">
+        <option [ngValue]="null">Todas</option>
+        @for (sucursal of sucursales(); track sucursal.id) {
+          <option [ngValue]="sucursal.id">{{ sucursal.nombre }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="filter-field">
+      <span>Desde</span>
+      <input type="date" formControlName="desde" />
+    </label>
+
+    <label class="filter-field">
+      <span>Hasta</span>
+      <input type="date" formControlName="hasta" />
+    </label>
+
+    <label class="filter-field">
+      <span>Por página</span>
+      <select formControlName="limite">
+        <option [ngValue]="10">10</option>
+        <option [ngValue]="20">20</option>
+        <option [ngValue]="50">50</option>
+      </select>
+    </label>
+
+    <div class="filter-actions">
+      <button type="submit" class="primary-btn">Filtrar</button>
+      <button type="button" class="secondary-btn" (click)="limpiarFiltros()">Limpiar</button>
+    </div>
+  </form>
+
+  @if (error()) {
+    <div class="alert alert-error">{{ error() }}</div>
+  }
+
+  @if (mensaje()) {
+    <div class="alert alert-ok">{{ mensaje() }}</div>
+  }
+
+  @if (cargando()) {
+    <div class="state">Cargando facturas...</div>
+  } @else if (items().length === 0) {
+    <div class="state">No se encontraron facturas con los filtros aplicados.</div>
+  } @else {
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Nro</th>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th>Sucursal</th>
+            <th class="text-right">Importe</th>
+            <th class="text-right">IVA</th>
+            <th class="text-right">Total</th>
+            <th>Estado</th>
+            <th class="text-right" *appPermiso="'datos.gestionar'">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of items(); track item.nroFactura) {
+            <tr>
+              <td class="mono">#{{ item.nroFactura }}</td>
+              <td>{{ item.fechaFactura | date: 'dd/MM/yyyy' }}</td>
+              <td>
+                <div class="client-cell">
+                  <span class="client-name">{{ nombreCliente(item) }}</span>
+                  <span class="muted">DNI {{ item.clienteDni }}</span>
+                </div>
+              </td>
+              <td>
+                <span>{{ item.sucursalNombre }}</span>
+                <span class="muted"> ({{ item.sucursalCiudad }})</span>
+              </td>
+              <td class="text-right num">
+                {{ item.importe | currency: 'ARS' : 'symbol-narrow' : '1.0-2' }}
+              </td>
+              <td class="text-right num muted">
+                {{ item.iva | currency: 'ARS' : 'symbol-narrow' : '1.0-2' }}
+              </td>
+              <td class="text-right num strong">
+                {{ totalFila(item) | currency: 'ARS' : 'symbol-narrow' : '1.0-2' }}
+              </td>
+              <td>
+                <span class="estado-pill" [class]="'estado-pill ' + claseEstado(item.estado)">
+                  {{ item.estado }}
+                </span>
+              </td>
+              <td class="actions" *appPermiso="'datos.gestionar'">
+                <button type="button" class="link-btn" (click)="abrirEditar(item)">Editar</button>
+                <button type="button" class="link-btn danger" (click)="eliminar(item)">
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination">
+      <span class="counter">{{ rangoInicio() }}–{{ rangoFin() }} de {{ total() }} factura(s)</span>
+      <div class="pager">
+        <button
+          type="button"
+          class="secondary-btn"
+          [disabled]="paginaActual() === 1"
+          (click)="irPagina(paginaActual() - 1)"
+        >
+          Anterior
+        </button>
+        <span class="page-info">Página {{ paginaActual() }} de {{ totalPaginas() }}</span>
+        <button
+          type="button"
+          class="secondary-btn"
+          [disabled]="paginaActual() === totalPaginas()"
+          (click)="irPagina(paginaActual() + 1)"
+        >
+          Siguiente
+        </button>
+      </div>
+    </div>
+  }
+</section>
+
+@if (modalAbierto()) {
+  <div class="modal-backdrop" (click)="cerrarModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <header class="modal-header">
+        <h2>{{ editando() ? 'Editar factura #' + editando()!.nroFactura : 'Nueva factura' }}</h2>
+        <button type="button" class="close-btn" (click)="cerrarModal()">×</button>
+      </header>
+
+      <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+        <div class="form-grid">
+          <label class="field">
+            <span>Fecha</span>
+            <input type="date" formControlName="fechaFactura" />
+          </label>
+
+          <label class="field">
+            <span>Importe (sin IVA)</span>
+            <input type="number" formControlName="importe" min="0.01" step="0.01" />
+            @if (form.controls.importe.touched && form.controls.importe.invalid) {
+              <small class="field-error">El importe debe ser mayor a cero.</small>
+            }
+          </label>
+        </div>
+
+        <label class="field">
+          <span>Cliente</span>
+          <select formControlName="idCliente">
+            <option [ngValue]="0">Seleccioná un cliente</option>
+            @for (cliente of clientes(); track cliente.id) {
+              <option [ngValue]="cliente.id">
+                {{ cliente.apellido }}, {{ cliente.nombre }} (DNI {{ cliente.dni }})
+              </option>
+            }
+          </select>
+        </label>
+
+        <div class="form-grid">
+          <label class="field">
+            <span>Sucursal</span>
+            <select formControlName="idSucursal">
+              <option [ngValue]="0">Seleccioná una sucursal</option>
+              @for (sucursal of sucursales(); track sucursal.id) {
+                <option [ngValue]="sucursal.id">{{ sucursal.nombre }} ({{ sucursal.ciudad }})</option>
+              }
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Estado</span>
+            <select formControlName="estado">
+              @for (estado of estados; track estado) {
+                <option [value]="estado">{{ estado }}</option>
+              }
+            </select>
+          </label>
+        </div>
+
+        <p class="hint">El IVA (21 %) se calcula automáticamente sobre el importe.</p>
+
+        <footer class="modal-actions">
+          <button type="button" class="secondary-btn" (click)="cerrarModal()">Cancelar</button>
+          <button type="submit" class="primary-btn" [disabled]="guardando()">
+            {{ guardando() ? 'Guardando...' : 'Guardar' }}
+          </button>
+        </footer>
+      </form>
+    </div>
+  </div>
+}

@@ -1,0 +1,179 @@
+<section class="admin-page">
+  <header class="admin-header">
+    <div>
+      <h1>Gestión de usuarios</h1>
+      <p>
+        @if (auth.esDev()) {
+          Administración completa de cuentas y roles del sistema.
+        } @else {
+          Administración de usuarios empleados y sus sucursales.
+        }
+      </p>
+    </div>
+    <button type="button" class="primary-btn" (click)="abrirNuevo()">+ Nuevo usuario</button>
+  </header>
+
+  <div class="toolbar">
+    <input
+      type="search"
+      class="search-input"
+      placeholder="Buscar por nombre o email..."
+      [value]="busqueda()"
+      (input)="buscar($any($event.target).value)"
+    />
+    <span class="counter">{{ filtrados().length }} usuario(s)</span>
+  </div>
+
+  @if (error()) {
+    <div class="alert alert-error">{{ error() }}</div>
+  }
+
+  @if (mensaje()) {
+    <div class="alert alert-ok">{{ mensaje() }}</div>
+  }
+
+  @if (cargando()) {
+    <div class="state">Cargando usuarios...</div>
+  } @else if (filtrados().length === 0) {
+    <div class="state">No se encontraron usuarios.</div>
+  } @else {
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Email</th>
+            <th>Rol</th>
+            <th>Sucursal</th>
+            <th>Estado</th>
+            <th>Último ingreso</th>
+            @if (auth.esDev()) {
+              <th class="text-right">Cambiar rol</th>
+            }
+            <th class="text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (usuario of filtrados(); track usuario.id) {
+            <tr [class.inactivo]="!usuario.activo">
+              <td>
+                <div class="user-cell">
+                  <span class="avatar">{{ usuario.nombre.charAt(0) }}{{ usuario.apellido.charAt(0) }}</span>
+                  <span>{{ usuario.nombre }} {{ usuario.apellido }}</span>
+                </div>
+              </td>
+              <td class="muted">{{ usuario.email }}</td>
+              <td>
+                <span class="role-pill" [class]="'role-pill rol-' + usuario.rol">
+                  {{ etiquetaRol(usuario.rol) }}
+                </span>
+              </td>
+              <td class="muted">{{ usuario.sucursal ?? '—' }}</td>
+              <td>
+                <span class="status-pill" [class.status-on]="usuario.activo" [class.status-off]="!usuario.activo">
+                  {{ usuario.activo ? 'Activo' : 'Inactivo' }}
+                </span>
+              </td>
+              <td class="muted">
+                {{ usuario.ultimoLogin ? (usuario.ultimoLogin | date: 'dd/MM/yyyy HH:mm') : 'Nunca' }}
+              </td>
+              @if (auth.esDev()) {
+                <td class="text-right">
+                  <button type="button" class="link-btn" (click)="cambiarRol(usuario)">
+                    Cambiar rol
+                  </button>
+                </td>
+              }
+              <td class="actions">
+                <button type="button" class="link-btn" (click)="abrirEditar(usuario)">Editar</button>
+                <button type="button" class="link-btn" (click)="resetearPassword(usuario)">
+                  Resetear clave
+                </button>
+                <button
+                  type="button"
+                  class="link-btn"
+                  [class.danger]="usuario.activo"
+                  (click)="alternarActivo(usuario)"
+                >
+                  {{ usuario.activo ? 'Desactivar' : 'Activar' }}
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
+
+@if (modalAbierto()) {
+  <div class="modal-backdrop" (click)="cerrarModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <header class="modal-header">
+        <h2>{{ editando() ? 'Editar usuario' : 'Nuevo usuario' }}</h2>
+        <button type="button" class="close-btn" (click)="cerrarModal()">×</button>
+      </header>
+
+      <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+        <div class="form-grid">
+          <label class="field">
+            <span>Nombre</span>
+            <input type="text" formControlName="nombre" />
+          </label>
+
+          <label class="field">
+            <span>Apellido</span>
+            <input type="text" formControlName="apellido" />
+          </label>
+        </div>
+
+        <label class="field">
+          <span>Email</span>
+          <input type="email" formControlName="email" autocomplete="off" />
+          @if (form.controls.email.touched && form.controls.email.invalid) {
+            <small class="field-error">Ingresá un email válido.</small>
+          }
+        </label>
+
+        <div class="form-grid">
+          <label class="field">
+            <span>Rol</span>
+            <select formControlName="rol">
+              @for (rol of rolesDisponibles(); track rol) {
+                <option [value]="rol">{{ etiquetaRol(rol) }}</option>
+              }
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Sucursal</span>
+            <select formControlName="idSucursal" [disabled]="form.controls.rol.value !== 'empleado'">
+              <option [ngValue]="null">Sin sucursal</option>
+              @for (sucursal of sucursales(); track sucursal.id) {
+                <option [ngValue]="sucursal.id">{{ sucursal.nombre }} ({{ sucursal.ciudad }})</option>
+              }
+            </select>
+          </label>
+        </div>
+
+        <label class="field">
+          <span>{{ editando() ? 'Nueva contraseña (opcional)' : 'Contraseña' }}</span>
+          <input type="password" formControlName="password" autocomplete="new-password" />
+          <small class="hint">Mínimo 8 caracteres.</small>
+        </label>
+
+        <label class="checkbox-field">
+          <input type="checkbox" formControlName="activo" />
+          <span>Usuario activo</span>
+        </label>
+
+        <footer class="modal-actions">
+          <button type="button" class="secondary-btn" (click)="cerrarModal()">Cancelar</button>
+          <button type="submit" class="primary-btn" [disabled]="guardando()">
+            {{ guardando() ? 'Guardando...' : 'Guardar' }}
+          </button>
+        </footer>
+      </form>
+    </div>
+  </div>
+}

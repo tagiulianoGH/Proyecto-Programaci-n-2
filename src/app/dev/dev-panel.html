@@ -1,0 +1,97 @@
+<section class="dev-page">
+  <header class="dev-header">
+    <div>
+      <h1>Panel de desarrollador</h1>
+      <p>Sesiones activas y configuración técnica del sistema.</p>
+    </div>
+    <span class="dev-badge">Acceso dev</span>
+  </header>
+
+  @if (error()) {
+    <div class="alert alert-error">{{ error() }}</div>
+  }
+
+  @if (mensaje()) {
+    <div class="alert alert-ok">{{ mensaje() }}</div>
+  }
+
+  <div class="dev-grid">
+    <section class="panel panel-wide">
+      <header class="panel-header">
+        <h2>Sesiones activas</h2>
+        <button type="button" class="secondary-btn" (click)="cargarSesiones()">Refrescar</button>
+      </header>
+
+      @if (cargando()) {
+        <div class="state">Cargando sesiones...</div>
+      } @else if (sesiones().length === 0) {
+        <div class="state">No hay sesiones activas.</div>
+      } @else {
+        <div class="table-wrapper">
+          <table class="dev-table">
+            <thead>
+              <tr>
+                <th>Usuario</th>
+                <th>Rol</th>
+                <th>IP</th>
+                <th>Iniciada</th>
+                <th>Expira</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (sesion of sesiones(); track sesion.id) {
+                <tr>
+                  <td>
+                    <strong>{{ sesion.nombre }} {{ sesion.apellido }}</strong>
+                    <div class="muted">{{ sesion.email }}</div>
+                  </td>
+                  <td>
+                    <span class="role-pill" [class]="'role-pill rol-' + sesion.rol">
+                      {{ sesion.rol }}
+                    </span>
+                  </td>
+                  <td class="muted">{{ sesion.ip ?? '—' }}</td>
+                  <td class="muted">{{ sesion.creadaEn | date: 'dd/MM/yyyy HH:mm' }}</td>
+                  <td class="muted">{{ sesion.expiraEn | date: 'dd/MM/yyyy HH:mm' }}</td>
+                  <td class="text-right">
+                    <button type="button" class="link-btn danger" (click)="revocar(sesion)">
+                      Revocar
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+
+    <section class="panel">
+      <header class="panel-header">
+        <h2>Configuración</h2>
+      </header>
+
+      <form [formGroup]="form" (ngSubmit)="guardarConfiguracion()" novalidate>
+        <label class="field">
+          <span>Nombre de la empresa</span>
+          <input type="text" formControlName="nombreEmpresa" />
+        </label>
+
+        <label class="checkbox-field">
+          <input type="checkbox" formControlName="modoMantenimiento" />
+          <span>Modo mantenimiento (solo los dev pueden ingresar)</span>
+        </label>
+
+        <label class="field">
+          <span>Mensaje de mantenimiento</span>
+          <textarea rows="4" formControlName="mensajeMantenimiento"></textarea>
+        </label>
+
+        <button type="submit" class="primary-btn" [disabled]="guardando()">
+          {{ guardando() ? 'Guardando...' : 'Guardar configuración' }}
+        </button>
+      </form>
+    </section>
+  </div>
+</section>

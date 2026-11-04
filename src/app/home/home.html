@@ -1,0 +1,77 @@
+<section class="hero-container">
+  <div class="hero-content">
+    <h1><span class="text-highlight">GiuliCorp</span></h1>
+    <p>Gestión de ventas, sucursales y clientes de GiuliCorp</p>
+
+    <div class="features-grid">
+      <a routerLink="/ventas">
+        <div class="feature-card">
+          <div class="icon">📈</div>
+          <h3>Ventas</h3>
+          <p>Monitorea el total vendido por mes, con el IVA incluido.</p>
+          <span class="stat">{{ totalFacturas() }} facturas</span>
+        </div>
+      </a>
+
+      <a routerLink="/sucursales">
+        <div class="feature-card">
+          <div class="icon">📍</div>
+          <h3>Sucursales</h3>
+          <p>Administra las ubicaciones y el personal de cada sede.</p>
+          <span class="stat">{{ totalSucursales() }} sucursales</span>
+        </div>
+      </a>
+
+      <a routerLink="/clientes">
+        <div class="feature-card">
+          <div class="icon">👥</div>
+          <h3>Clientes</h3>
+          <p>Organiza tu base de datos de clientes y su situación fiscal.</p>
+          <span class="stat">{{ totalClientes() }} clientes</span>
+        </div>
+      </a>
+    </div>
+
+    @if (auth.esAdmin()) {
+      <div class="admin-section">
+        <h2>Administración</h2>
+        <div class="features-grid">
+          @if (auth.tienePermiso('usuarios.gestionar')) {
+            <a routerLink="/usuarios">
+              <div class="feature-card">
+                <div class="icon">🔐</div>
+                <h3>Usuarios</h3>
+                <p>Gestiona cuentas, sucursales asignadas y estados de acceso.</p>
+                <span class="stat">
+                  {{ auth.esDev() ? 'Roles y permisos' : 'Usuarios empleados' }}
+                </span>
+              </div>
+            </a>
+          }
+
+          @if (auth.tienePermiso('auditoria.ver')) {
+            <a routerLink="/auditoria">
+              <div class="feature-card">
+                <div class="icon">📋</div>
+                <h3>Auditoría</h3>
+                <p>Consulta accesos y cambios sensibles registrados en el sistema.</p>
+                <span class="stat">Trazabilidad</span>
+              </div>
+            </a>
+          }
+
+          @if (auth.esDev()) {
+            <a routerLink="/dev">
+              <div class="feature-card">
+                <div class="icon">⚙️</div>
+                <h3>Panel Dev</h3>
+                <p>Sesiones activas, configuración técnica y modo mantenimiento.</p>
+                <span class="stat">Solo dev</span>
+              </div>
+            </a>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</section>
