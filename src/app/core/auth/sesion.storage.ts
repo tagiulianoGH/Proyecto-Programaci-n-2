@@ -3,12 +3,14 @@ import { SesionGuardada } from '../../models';
 export const SESION_STORAGE_KEY = 'giulicorp.auth';
 
 /**
- * Acceso a localStorage sin depender de Angular.
+ * Acceso a sessionStorage sin depender de Angular.
+ * sessionStorage se borra automáticamente al cerrar la pestaña del navegador,
+ * por lo que la sesión no persiste entre pestañas ni al volver a entrar.
  * Lo usan tanto AuthService como el interceptor HTTP.
  */
 export function leerSesion(): SesionGuardada | null {
   try {
-    const crudo = localStorage.getItem(SESION_STORAGE_KEY);
+    const crudo = sessionStorage.getItem(SESION_STORAGE_KEY);
     if (!crudo) {
       return null;
     }
@@ -34,15 +36,15 @@ export function leerSesion(): SesionGuardada | null {
 
 export function guardarSesionLocal(sesion: SesionGuardada): void {
   try {
-    localStorage.setItem(SESION_STORAGE_KEY, JSON.stringify(sesion));
+    sessionStorage.setItem(SESION_STORAGE_KEY, JSON.stringify(sesion));
   } catch {
-    // Si el navegador bloquea localStorage se mantiene solo la sesion en memoria.
+    // Si el navegador bloquea sessionStorage se mantiene solo la sesion en memoria.
   }
 }
 
 export function limpiarSesionLocal(): void {
   try {
-    localStorage.removeItem(SESION_STORAGE_KEY);
+    sessionStorage.removeItem(SESION_STORAGE_KEY);
   } catch {
     // Nada para hacer.
   }
